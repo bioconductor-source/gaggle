@@ -1,0 +1,19 @@
+import(graph)
+
+export(
+  getNameList,
+  getCluster,
+  getMatrix,
+  getNetwork,
+  getHashMap,
+  broadcast,
+  geese,
+  getTargetGoose,
+  setTargetGoose,
+  setSpecies,
+  getSpecies,
+  showGoose,
+  hideGoose,
+  testGagglePackage,
+ .gaggleNetworkToGraphNEL,
+ .graphNELtoGaggleNetwork)
