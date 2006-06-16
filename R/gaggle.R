@@ -1,10 +1,17 @@
 # gaggle.R
 #---------------------------------------------------------------------------------
-#.First.lib <- function (libname, pkgname)
 .onLoad <- function (libname, pkgname)
 {
   cat (paste ('\nFirst.lib -- libname:', libname, 'pkgname:', pkgname, '\n'))
-  cat ('initializing gaggle package 1.1.0\n')
+
+    # All Bioconductor packages should use an x.y.z version scheme. The following rules apply:
+    # The y number should be odd for packages in devel and even for packages in release.
+    # This makes it easier for users to know whether the package they have installed
+    # is release or devel.  We encourage package maintainers to increment z whenever
+    # committing changes to a package in devel. Any change committed to a released
+    # package, no matter how small, must bump z.
+
+  cat ('initializing gaggle package 1.1.3\n')
   fullPathToGaggleJar = paste (libname, pkgname, 'jars', 'gaggleRShell.jar', sep=.Platform$file.sep)
   cat ('path to jar:', fullPathToGaggleJar, '\n')
   cat ('      script: ', .scriptVersion (), '\n')
@@ -21,9 +28,16 @@
   jvmVersion = .jcall ("java/lang/System", "S", "getProperty", "java.version")
   cat (' jvm version: ', jvmVersion, '\n')
   if (is.na (pmatch ("1.5.", jvmVersion))) {
-    cat ('\n   You are using the wrong version of Java.\n   Please see http://gaggle.systemsbiology.org/docs/html/java\n\n')
+    cat ('\n   You are using the wrong version of Java.\n',
+            '  Please see http://gaggle.systemsbiology.org/docs/html/java\n\n')
     return ()
     }
+} # first lib
+#---------------------------------------------------------------------------------
+gaggleInit <- function ()
+# the user must call this, to create the java R goose, to register it with
+# the boss, and before sending or receiving any broadcasts
+{
   goose <<- .jnew ("org/systemsbiology/gaggle/geese/rShell/RShellGoose")
   tester = geese ()
   if (is.null (tester)) {
@@ -38,11 +52,11 @@
     cat (' RShellGoose: ', .jcall (goose, "S", "getVersion"), "\n")
     }
 
-} # first lib
+} # gaggleInit
 #---------------------------------------------------------------------------------
 .scriptVersion <- function ()
 {
-  return ("gaggle.R $Revision: 782 $   $Date: 2006-05-02 11:04:40 -0700 (Tue, 02 May 2006) $");
+  return ("gaggle.R $Revision: 798 $   $Date: 2006-05-22 14:36:41 -0700 (Mon, 22 May 2006) $");
 }
 #---------------------------------------------------------------------------------
 getNameList <- function ()
@@ -235,6 +249,7 @@ getHashMap <- function ()
    # ---- create the graph, add nodes, add edges between them, 
    #      add edgeType attributes (which are implicit in the edge strings)
 
+  #print (cat ('lkjsadf;lkjasdf;lkjasdf;lkjasd;lfgkj'))
   g = new ("graphNEL")
   edgeDataDefaults (g, "edgeType") = ""
 
@@ -265,23 +280,22 @@ getHashMap <- function ()
     nodeB = tokens [2]
     edgeType = tokens [3]  # we ignore this for now, since graph allows only 1 edge
     attributeName = tokens [4]
+    #print (paste ('edge attribute name:', attributeName))
     rawAttributeValue = tokens [5]
     options (warn = -1)
     attributeValue = as.numeric (rawAttributeValue)
     options (warn = 1)
     if (is.na (attributeValue)) attributeValue = rawAttributeValue
      # is this an unknown edge attribute type?  if so, initialize it
-    if (!.listMember (attributeName, names (edgeDataDefaults (g))))
-      edgeDataDefaults (g, attributeName) = ""
+    if (!.listMember (attributeName, names (edgeDataDefaults (g)))) {
+      if (attributeName == 'weight')
+        edgeDataDefaults (g, attributeName) = 1.0
+      else
+        edgeDataDefaults (g, attributeName) = ""
+      } # if new edge attribute
     edgeData (g, from=nodeA, to=nodeB, attr=attributeName) = attributeValue
-    }
+  } # if edge attributes
 
-   # ---- finally traverse the node attributes, and add them
-  #print (paste ('---- noas:', noas))
-  #print (paste ('is.null?', is.null (noas)))
-  #print (paste ('is.na?', is.na (noas)))
-
-  #print (paste ('gaggle network to graph nel, noas: ', noas))
   if (!is.null (noas) && !is.na (noas) && length (noas) > 0) for (noa in noas) {
     tokens = unlist (strsplit (noa, '::'))
     node = tokens [1]
@@ -296,159 +310,6 @@ getHashMap <- function ()
     if (is.na (attributeValue)) attributeValue = rawAttributeValue
     nodeData (g, node, attributeName) = attributeValue
     } # for
-
-  return (g)
-
-}# .gaggleNetworkToGraphNEL
-#-------------------------------------------------------------------------------------------
-.oldgraphNELtoGaggleNetwork <- function (g)
-# the name of this function is a slight exaggeration:  we don't really create
-# a Gaggle Network object here, but we do translate the R graph into 3 String
-# arrays, which are easy to send to Java, and from which RShellGoose.java can
-# easily construct a real Gaggle Network.
-# 
-# these are the string types
-#
-#   edges:           "VNG0723G::VNG1233G::PhylogeneticProfile"
-#   edge attributes: "VNG0723G::VNG1233G::PhylogeneticProfile::confidence::0.533"
-#   node attributes: "VNG1233G::commonName::pepq2"
-{
-   # does it have an explicit edge type?  gaggle network graphs always do, but
-   # those originating in R may not.  supply one if needed
-
-  hasExplicitEdgeType = .listMember ("edgeType", names (edgeDataDefaults (g)))
-  if (!hasExplicitEdgeType)
-    edgeDataDefaults (g, "edgeType") = "edge"
-
-   #------------------------------------------------------------------------
-   # create the edge strings:  nodeA::nodeB:<edgeType>
-   #------------------------------------------------------------------------
-
-  edgeStringList = c ()
-  for (node in nodes (g)) {
-    edgePartners = edges (g)[[node]]
-    for (partner in edgePartners) {
-      nodeA = node
-      nodeB = partner
-        # keep edge strings nodes alphabetically sorted, so we can check for duplicates
-      if (nodeA > nodeB) { 
-        tmp = nodeB
-        nodeB = nodeA
-        nodeA = tmp
-        }
-      edgeType = edgeData (g, nodeA, nodeB, "edgeType")
-      edgeString = paste (nodeA, nodeB, edgeType, sep='::')
-      if (!.listMember (edgeString, edgeStringList))
-        edgeStringList = c (edgeStringList, edgeString)
-      }# for partner
-    }# for node
-
-   #------------------------------------------------------------------------------
-   # now create the node attribute strings:  node::attributeName::attributeValue
-   #------------------------------------------------------------------------------
-
-  nodeAttributeStringList = c ()
-  nodeAttributeNames = names (nodeDataDefaults (g))
-  for (attributeName in nodeAttributeNames) {
-    for (node in nodes (g)) {
-      value = nodeData (g, node, attributeName )[[1]]
-      noaString = paste (node, attributeName, value, sep='::')
-      nodeAttributeStringList = c (nodeAttributeStringList, noaString)
-      } # for node
-    } # for attributeName
-
-   #------------------------------------------------------------------------------
-   # lastly,  create the edge attribute strings:  
-   #    nodeA::nodeB::edgeType::attributeName::attributeValue
-   #------------------------------------------------------------------------------
-
-  edgeAttributeStringList = c ()
-  edgeAttributeNames = names (edgeDataDefaults (g))
-
-    # partner nodes (sharing an edge) have already been identifed, and stroed in edgeStringList
-    # exploit that rather than searching again
-
-  for (attributeName in edgeAttributeNames) {
-    for (edgeString in edgeStringList) {
-      tokens = unlist (strsplit (edgeString, "::"))
-      nodeA = tokens [1]
-      nodeB = tokens [2]
-      edgeType = tokens [3]
-      attributeValue = edgeData (g, nodeA, nodeB, attributeName)[[1]]
-      edaString = paste (nodeA, nodeB, edgeType, attributeName, attributeValue, sep="::")
-      edgeAttributeStringList = c (edgeAttributeStringList, edaString)
-      } # for edgeString
-    } # for attributeName
-
-   results = list ()
-   results$edges = edgeStringList
-   results$noa = nodeAttributeStringList
-   results$eda = edgeAttributeStringList
-
-   return (results)
-
-} # .graphNELtoGaggleNetwork 
-#---------------------------------------------------------------------------------
-.oldgaggleNetworkToGraphNEL <- function (edges, noas, edas)
-# it's easy to send arrays of strings between java and R, so that's what we rely on.
-# there are three types of strings, each of which has some 'magic' coding, as you can 
-# see below:
-#   edges consist of strings like  "VNG0723G::VNG1233G::PhylogeneticProfile"
-#   edge attributes: "VNG0723G::VNG1233G::PhylogeneticProfile::confidence::0.533"
-#   node attributes: "VNG1233G::commonName::pepq2"
-{
-   # ---- create the graph, add nodes, add edges between them, 
-   #      add edgeType attributes (which are implicit in the edge strings)
-
-  g = new ("graphNEL")
-  edgeDataDefaults (g, "edgeType") = ""
-
-  for (edge in edges) {
-    tokens = unlist (strsplit (edge, '::'))
-    nodeA = tokens [1]
-    nodeB = tokens [2]
-    edgeType = tokens [3]
-    if (!.listMember (nodeA, nodes (g)))
-      g = addNode (nodeA, g)
-    if (!.listMember (nodeB, nodes (g)))
-      g = addNode (nodeB, g)
-    g = addEdge (nodeA, nodeB, g)
-    edgeData (g, from=nodeA, to=nodeB, attr="edgeType") = edgeType
-    }
-
-   # ---- now traverse the explicit edge attributes, and add them
-  for (eda in edas) {
-    tokens = unlist (strsplit (eda, '::'))
-    nodeA = tokens [1]
-    nodeB = tokens [2]
-    edgeType = tokens [3]  # we ignore this for now, since graph allows only 1 edge
-    attributeName = tokens [4]
-    rawAttributeValue = tokens [5]
-    options (warn = -1)
-    attributeValue = as.numeric (rawAttributeValue)
-    options (warn = 1)
-    if (is.na (attributeValue)) attributeValue = rawAttributeValue
-     # is this an unknown edge attribute type?  if so, initialize it
-    if (!.listMember (attributeName, names (edgeDataDefaults (g))))
-      edgeDataDefaults (g, attributeName) = ""
-    edgeData (g, from=nodeA, to=nodeB, attr=attributeName) = attributeValue
-    }
-
-   # ---- finally traverse the node attributes, and add them
-  for (noa in noas) {
-    tokens = unlist (strsplit (noa, '::'))
-    node = tokens [1]
-    attributeName = tokens [2]
-    rawAttributeValue = tokens [3]
-     # is this an unknown node attribute type? if so, initialize it
-    if (!.listMember (attributeName, names (nodeDataDefaults (g))))
-      nodeDataDefaults (g, attributeName) = ""
-    options (warn = -1)
-    attributeValue = as.numeric (rawAttributeValue)
-    options (warn = 1)
-    if (is.na (attributeValue)) attributeValue = rawAttributeValue
-    nodeData (g, node, attributeName) = attributeValue
-    }
 
   return (g)
 

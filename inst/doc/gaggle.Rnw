@@ -98,7 +98,7 @@ including the \textbf{Gaggle Boss} which must always be started first in any Gag
 you run.
 
 \begin{center}
-\url{http://gaggle.systemsbiology.org/R/vignette/1}
+\url{http://gaggle.systemsbiology.org/R/vignettes/1}
 \end{center}
 
 \section{Technical Background and Notes}
@@ -143,7 +143,7 @@ gaggling websites, until we improve them!
 In this first demonstration, we 
 
 \begin{itemize}
-\item Start the Gaggle Boss  (browse to \url{http://gaggle.systemsbiology.org/R/vignette/1}, Part 1, for web start links)
+\item Start the Gaggle Boss  (browse to \url{http://gaggle.systemsbiology.org/R/vignettes/1}, Part 1, for web start links)
 \item Start Cytoscape
 \item Start R, and load the gaggle package
 \item Create a randomEGraph, broadcast it, and see it  displayed in Cytoscape
@@ -154,7 +154,8 @@ but as a connected subgraph (that is, with edges included)
 
 
 <<Broadcast0, eval=FALSE, echo=TRUE>>=
-library(gaggle)
+library (gaggle)
+gaggleInit ()
 set.seed (123)
 g = randomEGraph (LETTERS [1:8], edges=10)
 broadcast (g)
@@ -229,7 +230,7 @@ broadcast (c ('B', 'E'))
 
 For more information, and for more extensive demonstrations, please visit
 
-\url{http://gaggle.systemsbiology.org/R/vignette/1}
+\url{http://gaggle.systemsbiology.org/R/vignettes/1}
 
 and the Gaggle website:
 
