@@ -11,7 +11,7 @@
     # committing changes to a package in devel. Any change committed to a released
     # package, no matter how small, must bump z.
 
-  cat ('initializing gaggle package 1.1.4\n')
+  cat ('initializing gaggle package 1.1.5\n')
   fullPathToGaggleJar = paste (libname, pkgname, 'jars', 'gaggleRShell.jar', sep=.Platform$file.sep)
   cat ('path to jar:', fullPathToGaggleJar, '\n')
   cat ('      script: ', .scriptVersion (), '\n')
@@ -56,7 +56,7 @@ gaggleInit <- function (bossHost = 'localhost')
 #---------------------------------------------------------------------------------
 .scriptVersion <- function ()
 {
-  return ("gaggle.R $Revision: 826 $   $Date: 2006-06-26 09:55:14 -0700 (Mon, 26 Jun 2006) $");
+  return ("gaggle.R $Revision: 833 $   $Date: 2006-06-26 13:54:23 -0700 (Mon, 26 Jun 2006) $");
 }
 #---------------------------------------------------------------------------------
 getNameList <- function ()
