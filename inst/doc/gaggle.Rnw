@@ -39,18 +39,19 @@
 \maketitle
 
 The practice of biology often requires the simultaneous exploration of many kinds of data.
-No single software tool, web site, or combination of Bioconductor packages can
-do justice to these data.  In fact -- and despite significant effort having been devoted
+No single software tool, web site, or combination of Bioconductor packages, can
+do justice to these data.  Furthermore -- and despite significant effort having been devoted
 to integrating many kinds of data within single programs and web sites in recent years-- 
-the heterogeneity of biological data is only likely to increase, along with the number
-and variety of programs and web sites used to view them.
+the challenge presented by heterogeneity of biological data is only likely to increase, as
+are the the number of useful programs and web sites for exploring that data.
 
 The Gaggle (Shannon et al. 2006) tackles this heterogeneity by providing a simple
-mechanism for broadcasting data among properly \emph{gaggled} programs.  And contrary,
+mechanism for broadcasting data among properly \emph{gaggled} programs.  And, contrary
 to expectation, careful semantic mapping is \emph{not} required for these broadcasts to be useful.
+
+
 In the Gaggle, the data types are distilled versions of data types
-commonly used
-in bioinformatics (and, indeed, in many other scientific fields). They are
+commonly used in bioinformatics (and, indeed, in many other scientific fields). They are
 essentially free of biological semantics, but they take on rich semantics when they
 are interpreted by the receiving program.  For instance: a simple list of
 (gene) names may be used to select rows of a matrix in R, nodes in a Cytoscape network, metabolic
@@ -66,10 +67,7 @@ The current vignette illustrates the Gaggle with a very simple example. We creat
 a random edge graph in R, broadcast it to Cytoscape for display, followed by
 broadcasting selected node names back and forth.
 
-The four Gaggle \textbf{data types} are distilled versions of data types commonly used
-in bioinformatics (and, indeed, in many other scientific fields). These data types are
-essentially free of biological semantics:
-R data types they are mapped to:
+The four Gaggle \textbf{data types} are translated into R as follws:
 
 \begin{itemize}
 \item name list          (mapped to an R character list)
@@ -127,7 +125,7 @@ ignores those broadcasts.  The \textbf{STRING} goose will present a web page
 for the discovery of protein associations; the network which results may be
 broadcast back to the Gaggle.
 
-As of this writing (April 2006) web resources -- bioinformatics
+As of this writing (June 2006) web resources -- bioinformatics
 websites like KEGG and EMBL's STRING -- are included in the Gaggle by
 way of naive, home-grown web browsers, written by us in Java, and
 tailored to the details of these sites. These browsers work reliably,
@@ -184,7 +182,7 @@ it only forwards messages to selected geese).
 Click the 'Update' button to ensure that your goose has a fresh list of all
 currently running geese for you to choose from.
 
-Inasmuch as the R goose does not hae a full-fledged graphical user interface,
+Inasmuch as the R goose does not have a full-fledged graphical user interface,
 function calls must be used instead of buttons and menus to 
 interact with the Gaggle.  Here are the relevant commands:
 

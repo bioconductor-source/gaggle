@@ -11,7 +11,7 @@
     # committing changes to a package in devel. Any change committed to a released
     # package, no matter how small, must bump z.
 
-  cat ('initializing gaggle package 1.1.3\n')
+  cat ('initializing gaggle package 1.1.4\n')
   fullPathToGaggleJar = paste (libname, pkgname, 'jars', 'gaggleRShell.jar', sep=.Platform$file.sep)
   cat ('path to jar:', fullPathToGaggleJar, '\n')
   cat ('      script: ', .scriptVersion (), '\n')
@@ -34,11 +34,11 @@
     }
 } # first lib
 #---------------------------------------------------------------------------------
-gaggleInit <- function ()
+gaggleInit <- function (bossHost = 'localhost')
 # the user must call this, to create the java R goose, to register it with
 # the boss, and before sending or receiving any broadcasts
 {
-  goose <<- .jnew ("org/systemsbiology/gaggle/geese/rShell/RShellGoose")
+  goose <<- .jnew ("org/systemsbiology/gaggle/geese/rShell/RShellGoose", bossHost)
   tester = geese ()
   if (is.null (tester)) {
     cat ('\n\n\tFailed to connect to a Gaggle Boss.  Is one running on your computer?\n')
@@ -56,7 +56,7 @@ gaggleInit <- function ()
 #---------------------------------------------------------------------------------
 .scriptVersion <- function ()
 {
-  return ("gaggle.R $Revision: 798 $   $Date: 2006-05-22 14:36:41 -0700 (Mon, 22 May 2006) $");
+  return ("gaggle.R $Revision: 826 $   $Date: 2006-06-26 09:55:14 -0700 (Mon, 26 Jun 2006) $");
 }
 #---------------------------------------------------------------------------------
 getNameList <- function ()

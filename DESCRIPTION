@@ -1,6 +1,6 @@
 Package: gaggle
-Version: 1.1.3
-Date: 05-22-2006
+Version: 1.1.4
+Date: 06-23-2006
 Title: R Goose functions
 Author: Paul Shannon <pshannon@systemsbiology.org>
 Maintainer: Paul Shannon <pshannon@systemsbiology.org>
@@ -9,3 +9,4 @@ Description: this package contains functions connecting R with the Gaggle
 License: GPL version 2 or newer
 URL: http://gaggle.systemsbiology.org
 biocViews: Visualization, Annotation, GraphsAndNetworks
+Packaged: Mon Jun 26 11:17:15 2006; pshannon
