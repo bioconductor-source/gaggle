@@ -2,7 +2,9 @@
 #---------------------------------------------------------------------------------
 .onLoad <- function (libname, pkgname)
 {
-  cat (paste ('\nFirst.lib -- libname:', libname, 'pkgname:', pkgname, '\n'))
+  #require ("methods")
+  require ("rJava")
+  cat (paste ('\nonLoad -- libname:', libname, 'pkgname:', pkgname, '\n'))
 
     # All Bioconductor packages should use an x.y.z version scheme. The following rules apply:
     # The y number should be odd for packages in devel and even for packages in release.
@@ -11,7 +13,7 @@
     # committing changes to a package in devel. Any change committed to a released
     # package, no matter how small, must bump z.
 
-  cat ('initializing gaggle package 1.1.5\n')
+  cat ('initializing gaggle package 1.1.8\n')
   fullPathToGaggleJar = paste (libname, pkgname, 'jars', 'gaggleRShell.jar', sep=.Platform$file.sep)
   cat ('path to jar:', fullPathToGaggleJar, '\n')
   cat ('      script: ', .scriptVersion (), '\n')
@@ -56,7 +58,7 @@ gaggleInit <- function (bossHost = 'localhost')
 #---------------------------------------------------------------------------------
 .scriptVersion <- function ()
 {
-  return ("gaggle.R $Revision: 833 $   $Date: 2006-06-26 13:54:23 -0700 (Mon, 26 Jun 2006) $");
+  return ("gaggle.R $Revision: 882 $   $Date: 2006-08-30 14:57:21 -0700 (Wed, 30 Aug 2006) $");
 }
 #---------------------------------------------------------------------------------
 getNameList <- function ()
@@ -420,7 +422,7 @@ hideGoose <- function (target=NULL)
 .broadcastAssociativeArray <- function (list, name)
 {
   listBaseType = typeof (as.vector (list) [1])
-  #cat ('list base type:', listBaseType, '\n')
+  cat ('list base type:', listBaseType, '\n')
   if (listBaseType == 'list') {
     cat ('error! cannot broadcast a nested list\n')
     return (NULL)
@@ -437,12 +439,16 @@ hideGoose <- function (target=NULL)
    .jcall (goose, "V", "createAndBroadcastDoubleAttributes", name, listKeys, listValues)
     }
 
-  if (listBaseType == 'integer') {
+  else if (listBaseType == 'integer') {
     listValues = as.integer (list)
     #cat ('    type of int list elements:', typeof (listValues [1]), '\n')
    .jcall (goose, "V", "createAndBroadcastIntegerAttributes", name, listKeys, listValues)
     #cat ('   after int call \n')
     }
+
+  else {
+    cat ('error! cannot broadcast hash of listBastType ', listBaseType, '\n')
+  }
 
 } # broadcastAssociativeArray
 #--------------------------------------------------------------------------------
@@ -488,7 +494,31 @@ hideGoose <- function (target=NULL)
 } # broadcastGraph
 #--------------------------------------------------------------------------------------------------
 .broadcastEnvironment <- function (map, attributeName)
+# the map has a magic field:  'title'
+# this slot, if present, supplies the title of this hash map, which is not to
+# be confused with the name of the attribute being assigned.
+# for example:  
+#    title = 'simulation #4'  
+#    attributeName='log2 ratio'
+#    names = c ("A", "B", "C")
+#    values = c (0.5, 1.8, 0.85)
+#
+# in code:
+#   m = new.env ()
+#   m$title = 'simuluation #4'
+#   assign ("A", 0.5,  envir=m)
+#   assign ("B", 1.8,  envir=m)
+#   assign ("C", 0.85, envir=m)
+#   broadcast (m, "log2 ratio"
+#
+# -- or, if Biobase:mulitassign is available:
+#
+#   m = new.env ()
+#   m$title = 'simuluation #4'
+#   assign ("A", 0.5,  envir=m)
+
 {
+  #cat ('**----** entering .broadcastEnvironment: ', attributeName, '\n')
   keys = ls (map)
   allNames = c ()
   allValues = c ()
@@ -505,7 +535,16 @@ hideGoose <- function (target=NULL)
   #print (allNames)
   #print (allValues)
 
-  .jcall (goose, "V", "createAndBroadcastHashMap", attributeName, allNames, allValues)
+  if (! "title" %in% ls (map))
+    title = "from R"
+  else
+    title = map$title
+
+  #cat ("title: ", title, "\n")
+
+  .jcall (goose, "V", "createAndBroadcastHashMap", title, attributeName, allNames, allValues)
+
+  invisible ()
 
 } # broadcastEnvironment
 #--------------------------------------------------------------------------------------------------
