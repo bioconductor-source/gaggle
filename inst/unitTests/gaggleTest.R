@@ -596,3 +596,9 @@ test.roundTripBroadcastMinimalGraph <- function ()
 
 } # test.roundTripBroadcastGraphNoAttributes
 #---------------------------------------------------------------------------------
+test.map1 <- function (attributeName="testA", nodes="VNG1607G", values="hoopla", title="from R")
+{
+  .jcall (goose, "V", "createAndBroadcastHashMap", title, attributeName, nodes, values)
+  invisible ()
+}
+#---------------------------------------------------------------------------------
