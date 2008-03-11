@@ -38,13 +38,12 @@
 
 \maketitle
 
-The day-to-day practice of molecular biology requires the exploration of many kinds of data.
+The practice of biology often requires the simultaneous exploration of many kinds of data.
 No single software tool, web site, or combination of Bioconductor packages, can
 do justice to these data.  Furthermore -- and despite significant effort having been devoted
 to integrating many kinds of data within single programs and web sites in recent years-- 
 the challenge presented by heterogeneity of biological data is only likely to increase, as
 are the the number of useful programs and web sites for exploring that data.
-
 
 The Gaggle (Shannon et al. 2006) tackles this heterogeneity by providing a simple
 mechanism for broadcasting data among properly \emph{gaggled} programs.  And, contrary
@@ -64,20 +63,11 @@ grateful for) the R package \Rpackage{rJava} for Java/R integration.  Further
 information about the Gaggle may be found at \textbf{http://gaggle.systemsbiology.org}
 and in the references.
 
-The current vignette illustrates the Gaggle with two simple examples. In the first --
-and assuming you have installed the gaggle toolbar Firefox extension, for which we
-provide instructions -- you will broadcast four Entrez GeneIDs to KEGG.  In the second
-exapmle, you will create
+The current vignette illustrates the Gaggle with a very simple example. We create
 a random edge graph in R, broadcast it to Cytoscape for display, followed by
 broadcasting selected node names back and forth.
 
-In the first example, you can link your R analysis to a polished and useful website.
-In the second, you can visualize and make selections upon data using an open source bioinformatics
-program.  While these two particular 'geese' may not answer your current analytical needs, 
-we hope that they demonstrate how loose-coupling and semantic flexiblity can add extra
-capabilities to Bioconductor.
-
-The Gaggle's four \textbf{data types} are translated into R as follws:
+The four Gaggle \textbf{data types} are translated into R as follws:
 
 \begin{itemize}
 \item name list          (mapped to an R character list)
@@ -93,30 +83,20 @@ Gaggle  with a modest amount of programming.  (See the paper and website for mor
 Some current geese are:
 
 \begin{itemize}
-\item the '\emph{Firegoose}' -- the popular web browser extended with a gaggle toolbar and broadcast capabiliites
 \item Cytoscape (see http://www.cytoscape.org)
 \item TIGR Mev  (see http://www.tm4.org/mev.html)
+\item STRING goose (see http://string.embl.de)
 \item a variety of name translators
 \end{itemize}
 
-We encourage you to visit this vignette's companion website (see url just below).
+A companion website for this vignette may be found at which we encourage you to visit.
 It presents more background, several demos beyond the one presented here, and
-Java Web Start links from which you can (with one click)  download and run all of the necessary geese.
-This includes the \textbf{Gaggle Boss}, which must always be started \textbf{first} in any Gaggle session
+Java Web Start links from which you can (with one click)  download and run all of the necessary geese,
+including the \textbf{Gaggle Boss} which must always be started first in any Gaggle session
 you run.
 
 \begin{center}
 \url{http://gaggle.systemsbiology.org/R/vignettes/1}
-\end{center}
-
-We have recently (Spring of 2007) released a gaggle toolbar extension to the popular Firefox
-web browser.  Once installed (see link below for installation details) you can
-broadcast Entrez GeneID's to the browser, and thence to KEGG, Entrez Gene, EMBL STRING
-and DAVID websites; other websites can added with with little difficulty.  
-In selected cases (KEGG and STRING) information may be broadcast back to R.  
-
-\begin{center}
-\url{http://gaggle.systemsbiology.org/docs/geese/firegoose}
 \end{center}
 
 \section{Technical Background and Notes}
@@ -125,8 +105,7 @@ The \textbf{Gaggle} is a simple, open-ended collection of RMI-linked Java
 programs, which broadcast selected data to each other at the user's behest.
 These broadcasts are managed by a simple RMI server, the \textbf{Gaggle
 Boss}. Though it is not stricly necessary, we find it very convenient to launch most
-geese via Java Web Start links in a web page.  The \textbf{R goose}, of course, is 
-an exception:  simply 
+geese via Java Web Start links in a web page.  For the \textbf{R goose}, simply
 install the gaggle package as you would any other R or Bioconductor package.
 Please see the companion website for a generally useful set of Java Web Start
 links.
@@ -138,53 +117,28 @@ gaggle capabilities.
 Upon receiving a broadcast, each goose interprets the 
 data according to its own, local semantics. (This strategy of
 \textbf{semantic flexibility} is discussed at length in the Gaggle paper.)
-When the gaggle-enabled Firefox broadcasts a list of gene names to  \textbf{KEGG}
-for example, after having received those names from \textbf{R}, KEGG responds to by displaying
-a list of the metabolic pathways to which they have been annotated; having no
-sensible interpretation of matrices or networks,  KEGG will simply
-ignores those broadcasts.  \textbf{STRING} presents a web page
-for the discovery of protein associations; the resulting network may
-broadcast back to the Gaggle for further analysis.
+ The \textbf{KEGG}
+goose, for example, responds to a list of gene names by displaying
+the metabolic pathways to which they have been annotated; having no
+sensible interpretation of matrices or networks, the KEGG goose simply
+ignores those broadcasts.  The \textbf{STRING} goose will present a web page
+for the discovery of protein associations; the network which results may be
+broadcast back to the Gaggle.
+
+As of this writing (June 2006) web resources -- bioinformatics
+websites like KEGG and EMBL's STRING -- are included in the Gaggle by
+way of naive, home-grown web browsers, written by us in Java, and
+tailored to the details of these sites. These browsers work reliably,
+but they leave a \emph{lot} to be desired.  In recognition of this, we
+have been experimenting with Mozilla (Firefox) extensions, which allow
+us to use a full-fledged, popular browser in the Gaggle.  Expect more
+on this front soon, and please be patient with our initial attempts at
+gaggling websites, until we improve them!
 
 
-\section{Demo 1: Broadcast Entrez GeneIDs to KEGG}
+\section{Demo: Broadcast a randomEGraph to Cytoscape for viewing; broadcast selected nodes back to R}
 
 In this first demonstration, we 
-
-\begin{itemize}
-\item Start the Gaggle Boss  (browse to \url{http://gaggle.systemsbiology.org/R/vignettes/1}, Part 1, for web start links)
-\item Start R, and load the gaggle package
-\item Broadcsast a few human geneID's to KEGG using a gaggle-enabled Firefox browser
-\end{itemize}
-
-<<Broadcast0, eval=FALSE, echo=TRUE>>=
-setSpecies ('Homo sapiens')
-geese ()   # make sure that 'Firegoose' is among the currently running and registered geese
-setTargetGoose ('Firegoose')
-ids = c ('9475', '2316', '5747', '10298')
-broadcast (ids)
-@ 
-In Firefox, do the following:
-
-\begin{itemize}
-\item In the gaggle toolbar, towards the left, is a region titled \emph{Gaggle Data} with
-a pulldown menu which, after your broadcast, should read \emph{NameList(4) from Gaggle}.
-
-\includegraphics{gaggleData.png}
-
-
-\item Also in the toolbar, but towards the right, in a region titled \emph{Target} you
-will see another pulldown menu.  Select \emph{KEGG} and then click on \emph{Broadcast}.
-
-\includegraphics{gaggleTarget.png}
-
-\item In a moment, a list of KEGG pathways will appear in your browser
-\end{itemize}
-
-
-\section{Demo 2: Broadcast a randomEGraph to Cytoscape for viewing; broadcast selected nodes back to R}
-
-Here we 
 
 \begin{itemize}
 \item Start the Gaggle Boss  (browse to \url{http://gaggle.systemsbiology.org/R/vignettes/1}, Part 1, for web start links)
@@ -197,7 +151,7 @@ but as a connected subgraph (that is, with edges included)
 \end{itemize}
 
 
-<<Broadcast1, eval=FALSE, echo=TRUE>>=
+<<Broadcast0, eval=FALSE, echo=TRUE>>=
 library (gaggle)
 gaggleInit ()
 set.seed (123)

@@ -2,12 +2,13 @@
 \alias{gaggleInit}
 \title{Initialize the R Goose, registering with the Gaggle}
 \description{Call this function to register the R
-  Goose with an already-running Gaggle Boss; this makes all subsequent
-  communication possible.  This function call will fail if a boss is not running.
+  Goose with a Gaggle Boss. If you do not specify an argument, the function
+  will automatically start the Gaggle Boss for you if it is not already running.
+  If you do specify an argument (a remote machine on which a boss is running),
+  the boss must be running on that machine or this function will fail.
   By default, this function looks for, and registers with, a boss on your current
   computer ('localhost').   Alternatively, you may supply the
-  name of another computer where a boss is running.(See warning, below, about
-  avoiding fully-qualified names.)
+  name of another computer where a boss is running.
   This is useful if you wish to run R on a remote compute 
   server (perhaps with extra memory and speed), and connect it 
   to a gaggle running on your desktop.
@@ -15,10 +16,8 @@
 \usage{gaggleInit (bossHost = 'localhost')}
 
 \arguments{
-  \item{bossHost}{the computer ('host') on which your GaggleBoss is running. \emph{For some mysterious
-reason, in my testing I have found that  the hostname must NOT be fully qualified.  Simple, single 
-names like 'trickster'and 'hazel' work reliably, but their fully-qualified counterparts --
-'trickster.systemsbiology.org' and 'hazel.systemsbiology.net' -- do not.}}
+  \item{bossHost}{the computer ('host') on which your GaggleBoss is running. \emph{The host machine
+  must be accessible through any firewall (port 1099 must be open).}}
   }
 
 
@@ -30,7 +29,7 @@ names like 'trickster'and 'hazel' work reliably, but their fully-qualified count
   \code{\link{getMatrix}}.
   \code{\link{getNetwork}}.
   \code{\link{getCluster}}.
-  \code{\link{getHashMap}}.
+  \code{\link{getTuple}}.
   }
 
 \keyword{manip}

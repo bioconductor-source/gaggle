@@ -4,6 +4,7 @@
 {
   #require ("methods")
   require ("rJava")
+  libname = gsub(" ", "%20", libname)
   cat (paste ('\nonLoad -- libname:', libname, 'pkgname:', pkgname, '\n'))
 
     # All Bioconductor packages should use an x.y.z version scheme. The following rules apply:
@@ -13,7 +14,7 @@
     # committing changes to a package in devel. Any change committed to a released
     # package, no matter how small, must bump z.
 
-  cat ('initializing gaggle package 1.1.8\n')
+  cat ('initializing gaggle package 1.2.0 (2n007-04)\n')
   fullPathToGaggleJar = paste (libname, pkgname, 'jars', 'gaggleRShell.jar', sep=.Platform$file.sep)
   cat ('path to jar:', fullPathToGaggleJar, '\n')
   cat ('      script: ', .scriptVersion (), '\n')
@@ -29,7 +30,7 @@
   
   jvmVersion = .jcall ("java/lang/System", "S", "getProperty", "java.version")
   cat (' jvm version: ', jvmVersion, '\n')
-  if (is.na (pmatch ("1.5.", jvmVersion))) {
+  if (is.na (pmatch ("1.5.", jvmVersion)) & is.na (pmatch ("1.6.", jvmVersion))) {
     cat ('\n   You are using the wrong version of Java.\n',
             '  Please see http://gaggle.systemsbiology.org/docs/html/java\n\n')
     return ()
@@ -45,7 +46,7 @@ gaggleInit <- function (bossHost = 'localhost')
   if (is.null (tester)) {
     cat ('\n\n\tFailed to connect to a Gaggle Boss.  Is one running on your computer?\n')
     cat ('\tUse this Java Web Start link to start a boss:\n')
-    cat ('\t\thttp://gaggle.systemsbiology.org/2005-11/boss/boss.jnlp\n')
+    cat ('\t\thttp://gaggle.systemsbiology.org/2007-04/boss.jnlp\n')
     cat ('\tYou need to exit R, start the boss, re-enter R, and load the gaggle package once again.\n\n')
     }
   else {
@@ -58,7 +59,7 @@ gaggleInit <- function (bossHost = 'localhost')
 #---------------------------------------------------------------------------------
 .scriptVersion <- function ()
 {
-  return ("gaggle.R $Revision: 882 $   $Date: 2006-08-30 14:57:21 -0700 (Wed, 30 Aug 2006) $");
+  return ("gaggle.R $Revision: 2969 $   $Date: 2008-02-28 13:05:50 -0800 (Thu, 28 Feb 2008) $");
 }
 #---------------------------------------------------------------------------------
 getNameList <- function ()
@@ -77,6 +78,32 @@ getCluster <- function ()
   return (result)
 }
 #---------------------------------------------------------------------------------
+
+getTuple <- function ()
+{
+  hash = new.env ()
+  hash$title = .jcall (goose, "S", "getTupleTitle")
+  #hash$attributeName = .jcall (goose, "S". "getTupleAttributeName") #leave this be for now; it might mess things up
+  keys =   .jcall (goose, "[S", "getTupleKeys")
+  rawValues = .jcall (goose, "[S", "getTupleValues")
+  #print (keys)
+  #print (rawValues)
+
+  options (warn = -1)  # failed conversion to numeric prints an message to stdout; disable it
+
+  for (i in seq (length (keys))) {
+    value = as.numeric (rawValues [i])
+    if (is.na (value)) value = rawValues [i]
+    assign (keys [i], value, envir=hash)
+    }
+
+  options (warn = 1)  # turn warnings back on
+
+  return (hash)
+
+} # getHashMap
+
+
 getMatrix <- function ()
 {
   rowCount <- .jcall (goose, "I", "getMatrixRowCount")
@@ -97,38 +124,38 @@ getMatrix <- function ()
 
 }
 #---------------------------------------------------------------------------------
-getNetwork <- function ()
+getNetwork <- function (directed=T)
 {
   edgeStrings          = .jcall (goose, "[S", "getNetworkAsStringArray")
   nodeAttributeStrings = .jcall (goose, "[S", "getNetworkNodeAttributesAsStringArray")
   edgeAttributeStrings = .jcall (goose, "[S", "getNetworkEdgeAttributesAsStringArray")
-  result = .gaggleNetworkToGraphNEL (edgeStrings, nodeAttributeStrings, edgeAttributeStrings) 
+  result = .gaggleNetworkToGraphNEL (edgeStrings, nodeAttributeStrings, edgeAttributeStrings, directed) 
   #print (paste ('getNetwork: ', result))
   return (result)
 }
 #---------------------------------------------------------------------------------
-getHashMap <- function ()
-{
-  hash = new.env ()
-  hash$title = .jcall (goose, "S", "getHashMapTitle")
-  keys =   .jcall (goose, "[S", "getHashMapKeys")
-  rawValues = .jcall (goose, "[S", "getHashMapValues")
-  #print (keys)
-  #print (rawValues)
-
-  options (warn = -1)  # failed conversion to numeric prints an message to stdout; disable it
-
-  for (i in seq (length (keys))) {
-    value = as.numeric (rawValues [i])
-    if (is.na (value)) value = rawValues [i]
-    assign (keys [i], value, envir=hash)
-    }
-
-  options (warn = 1)  # turn warnings back on
-
-  return (hash)
-
-} # getHashMap
+#getHashMap <- function ()
+#{
+#  hash = new.env ()
+#  hash$title = .jcall (goose, "S", "getHashMapTitle")
+#  keys =   .jcall (goose, "[S", "getHashMapKeys")
+#  rawValues = .jcall (goose, "[S", "getHashMapValues")
+#  #print (keys)
+#  #print (rawValues)
+#
+#  options (warn = -1)  # failed conversion to numeric prints an message to stdout; disable it
+#
+#  for (i in seq (length (keys))) {
+#    value = as.numeric (rawValues [i])
+#    if (is.na (value)) value = rawValues [i]
+#    assign (keys [i], value, envir=hash)
+#    }
+#
+#  options (warn = 1)  # turn warnings back on
+#
+#  return (hash)
+#
+#} # getHashMap
 #---------------------------------------------------------------------------------
 .graphNELtoGaggleNetwork  <- function (g)
 # the name of this function is a slight exaggeration:  we don't really create
@@ -240,7 +267,7 @@ getHashMap <- function ()
 
 } # .graphNELtoGaggleNetwork 
 #---------------------------------------------------------------------------------
-.gaggleNetworkToGraphNEL <- function (edges, noas, edas)
+.gaggleNetworkToGraphNEL <- function (edges, noas, edas, directed)
 # it's easy to send arrays of strings between java and R, so that's what we rely on.
 # there are three types of strings, each of which has some 'magic' coding, as you can 
 # see below:
@@ -252,7 +279,13 @@ getHashMap <- function ()
    #      add edgeType attributes (which are implicit in the edge strings)
 
   #print (cat ('lkjsadf;lkjasdf;lkjasdf;lkjasd;lfgkj'))
-  g = new ("graphNEL")
+  edgeMode = "directed"
+  if (directed) {
+    edgeMode = "directed"
+  } else {
+    edgeMode = "undirected"
+  }
+  g = new ("graphNEL", edgemode=edgeMode)
   edgeDataDefaults (g, "edgeType") = ""
 
   if (!is.null (edges) && !is.na (edges)) for (edge in edges) {
@@ -333,21 +366,22 @@ broadcast <- function (x, name='from R')
       columnNames = x$columnNames
      .jcall (goose, "V", "broadcastCluster", name, rowNames, columnNames)
       }
-    else if (!is.null (names (x)))
+    else if (!is.null (names (x))) {
       .broadcastAssociativeArray (x, name)
-    else {
+    } else {
       if (length (x) == 1)  # 
-        x <- as.vector (c (x, x))
-      .jcall (goose, "V", "broadcastList", x)
+		x <- as.vector(c(x))
+      .jcall (goose, "V", "broadcastList", x, name)
       } # unnamed list
     } # vector 
 
   else if (class (x) == "graphNEL") {
-    .broadcastGraph (x)
+    .broadcastGraph (x, name)
     }
 
   else if (class (x) == "environment") {
     .broadcastEnvironment (x, name)
+    #.broadcastAssociativeArray(x, name)
     }
 
   else {
@@ -420,7 +454,7 @@ hideGoose <- function (target=NULL)
 } # .getEdgeType
 #-----------------------------------------------------------------------------------------
 .broadcastAssociativeArray <- function (list, name)
-{
+{ 
   listBaseType = typeof (as.vector (list) [1])
   cat ('list base type:', listBaseType, '\n')
   if (listBaseType == 'list') {
@@ -447,12 +481,12 @@ hideGoose <- function (target=NULL)
     }
 
   else {
-    cat ('error! cannot broadcast hash of listBastType ', listBaseType, '\n')
+    cat ('error! cannot broadcast hash of listBaseType ', listBaseType, '\n')
   }
 
 } # broadcastAssociativeArray
 #--------------------------------------------------------------------------------
-.broadcastGraph <- function (graph)
+.broadcastGraph <- function (graph, name)
 {
   graphAsStrings = .graphNELtoGaggleNetwork (graph)
   interactionStrings   = graphAsStrings$edges
@@ -471,7 +505,8 @@ hideGoose <- function (target=NULL)
     nodeAttributeStrings = emptyStringArray
     #print (paste ('noa after:', nodeAttributeStrings))
     }
-  if (is.na (edgeAttributeStrings)) edgeAttributeStrings = emptyStringArray
+  if (length (edgeAttributeStrings) == 0 || is.na (edgeAttributeStrings))
+    edgeAttributeStrings = emptyStringArray
 
   options (warn = 1)
 
@@ -488,8 +523,22 @@ hideGoose <- function (target=NULL)
   if (length (edgeAttributeStrings) == 1)
     edgeAttributeStrings = c (edgeAttributeStrings, "")
 
+	l = names(attributes(graph))
+	#e = new.env()
+	for (i in 1:length(l)) {
+		item <- l[i]
+		result = grep('^gaggle\\.', item)
+		if (length(result) > 0) {
+			#cat(item)
+			#cat(attr(n,item))  
+			#assign(item, attr(graph, item), envir=e)
+			.jcall(goose, "V", "addNetworkMetadata", item, attr(graph, item))
+		}
+	}
+
+
   .jcall (goose, "V", "createAndBroadcastNetwork", interactionStrings,
-                       nodeAttributeStrings, edgeAttributeStrings)
+                       nodeAttributeStrings, edgeAttributeStrings, name)
 
 } # broadcastGraph
 #--------------------------------------------------------------------------------------------------
@@ -505,11 +554,11 @@ hideGoose <- function (target=NULL)
 #
 # in code:
 #   m = new.env ()
-#   m$title = 'simuluation #4'
+#   m$title = 'simulation #4'
 #   assign ("A", 0.5,  envir=m)
 #   assign ("B", 1.8,  envir=m)
 #   assign ("C", 0.85, envir=m)
-#   broadcast (m, "log2 ratio"
+#   broadcast (m, "log2 ratio")
 #
 # -- or, if Biobase:mulitassign is available:
 #
@@ -518,7 +567,6 @@ hideGoose <- function (target=NULL)
 #   assign ("A", 0.5,  envir=m)
 
 {
-  #cat ('**----** entering .broadcastEnvironment: ', attributeName, '\n')
   keys = ls (map)
   allNames = c ()
   allValues = c ()
@@ -526,27 +574,41 @@ hideGoose <- function (target=NULL)
     allNames = c (allNames, name)
     values = get (name, map)
     valueCount = length (get (name, map))
-    valuesAsString = values [1]    
-    if (valueCount > 1) for (i in 2:valueCount) 
-      valuesAsString = paste (valuesAsString, values [i], sep=",")
+    capturedValue = .captureQuotedNumbersAsStrings(values[1])
+    valuesAsString = as.character(capturedValue)    
+	valuesAsString = paste (capturedValue)
     allValues = c (allValues, valuesAsString)
     }
   
-  #print (allNames)
-  #print (allValues)
-
   if (! "title" %in% ls (map))
     title = "from R"
   else
     title = map$title
 
-  #cat ("title: ", title, "\n")
-
-  .jcall (goose, "V", "createAndBroadcastHashMap", title, attributeName, allNames, allValues)
+  .jcall (goose, "V", "createAndBroadcastGaggleTuple", title, attributeName, allNames, allValues)
 
   invisible ()
 
 } # broadcastEnvironment
+
+
+.captureQuotedNumbersAsStrings <- function(i) {
+	previousWarnLevel = getOption('warn')
+	if (is.numeric(i)) { 
+		return (i)
+	}
+	
+	options(warn = -1)
+	if (is.na(as.numeric(i))) {
+		options(warn = previousWarnLevel)
+		return (i)
+	}
+	options(warn = previousWarnLevel)
+	
+	return (paste("|",i,"|", sep=""))
+}
+
+
 #--------------------------------------------------------------------------------------------------
 .listMember <- function (item, list)
 {
@@ -563,4 +625,14 @@ testGagglePackage <- function()
 
 } # testGagglePackage
 #-------------------------------------------------------------------------------------------------------
-        
+connectToGaggle <- function()
+{
+    .jcall (goose, "V", "connectToGaggle")
+    invisible()
+}
+#--------------------------------------------------------------------------------------------------
+disconnectFromGaggle <- function()
+{
+    .jcall (goose, "V", "doExit")
+    invisible()
+}

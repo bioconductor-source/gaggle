@@ -1,4 +1,10 @@
 # gaggleTest.R:  unit tests for functions in gaggle.R
+
+# all of these tests require a 'reflector goose' -- one which sends the
+# received broadcast straight back to this R goose -- to be running
+# you can start one up here:
+# 	http://gaggle.systemsbiology.net/2007-04/echo.jnlp
+
 #---------------------------------------------------------------------------------
 .First.lib <- function (libname, pkgname)
 {
@@ -60,7 +66,7 @@ test.roundTripBroadcastCluster <- function ()
 
 }
 #-------------------------------------------------------------------------------------
-# ensure that if we broadcast a hashmap (an R environment) to a 'reflector goose' -- 
+# ensure that if we broadcast a hashmap (an R environment) to a 'reflector goose' --
 # one which sends the received matrix straight back to this R goose -- that we receive the 
 # environment 
 #
@@ -76,7 +82,7 @@ test.roundTripBroadcastEnvironment <- function ()
 
   setTargetGoose ('all')
   broadcast (hash)
-  reflectedHash = getHashMap ()
+  reflectedHash = getTuple ()
   checkEquals (ls (hash), ls (reflectedHash))
   for (key in keys)
     checkEquals (get (key, hash), get (key, reflectedHash))
@@ -222,13 +228,13 @@ test.gaggleNetworkToGraphNEL_withOrphans <- function ()
 
   invisible (g)
 
-} # test.gaggleNetworkToGraphNEL_noOrphans
+}
 #-------------------------------------------------------------------------------------
 test.gaggleNetworkToGraphNEL_noOrphans <- function ()
 # this is a simple 3-node, 2-edge network, with lots of node & edge attributes, originally
 # obtained by selecting and broadcasting from the cytoscape network found at
 # http://gaggle.systemsbiology.net/projects/rValidation/2006-03/networks/prolinks-halo/cy.jnlp
-# this is a 'gaggle network' in the sense that, when the RShellGoose receives a nomal
+# this is a 'gaggle network' in the sense that, when the RShellGoose receives a normal
 # gaggle (Java) network object, it translates it into three lists of strings, each with their
 # own simple format.  that format is replicated here, in the three calls to .createNetworkData ():
 #
@@ -250,6 +256,7 @@ test.gaggleNetworkToGraphNEL_noOrphans <- function ()
     #--------------------------------------------------------------
 
   checkEquals (nodes (g), c ("VNG0720G", "VNG0723G", "VNG1038C"))
+
   checkEquals (edges (g)[["VNG0720G"]], c ("VNG0723G"))
   checkEquals (edges (g)[["VNG0723G"]], c ("VNG0720G", "VNG1038C"))
   checkEquals (edges (g)[["VNG1038C"]], c ("VNG0723G"))
@@ -519,10 +526,19 @@ test.roundTripBroadcastLargeRandomEGraph <- function ()
 {
   g1NodeAttributeNames = names (nodeDataDefaults (g1))
   g2NodeAttributeNames = names (nodeDataDefaults (g2))
-  checkEquals (g1NodeAttributeNames, g2NodeAttributeNames)
+  
+  g1SortedAttributeNames = sort(g1NodeAttributeNames)
+  g2SortedAttributeNames = sort(g2NodeAttributeNames)
+
+
+  checkEquals (g1SortedAttributeNames, g2SortedAttributeNames)
+
 
   g1NodeNames = sort (names (nodeData (g1)))
   g2NodeNames = sort (names (nodeData (g2)))
+
+
+
 
    # loop over the node attributes, and inside that loop, loop over the node names,
    # pulling out node attribute values one at a time, and testing them

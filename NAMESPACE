@@ -6,7 +6,7 @@ export(
   getCluster,
   getMatrix,
   getNetwork,
-  getHashMap,
+  getTuple,
   broadcast,
   geese,
   getTargetGoose,
@@ -15,4 +15,6 @@ export(
   getSpecies,
   showGoose,
   hideGoose,
-  testGagglePackage)
+  testGagglePackage,
+  connectToGaggle,
+  disconnectFromGaggle)
