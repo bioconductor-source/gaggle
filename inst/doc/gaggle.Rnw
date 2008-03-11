@@ -235,6 +235,26 @@ and the Gaggle website:
 \url{http://gaggle.systemsbiology.org}
 
 
+\section{Issues with the gaggle package on Windows}
+
+The gaggle package depends  has a couple of issues running under Windows. Both can be worked around as follows.
+
+\begin{itemize}
+
+\item Because of an issue with the rJava package, on which the gaggle package depends, your CLASSPATH must be set in a certain way. Make sure your Windows CLASSPATH does 
+\emph{NOT} contain the following entries, or the gaggle package will not work:
+
+\begin{itemize}
+\item . (representing the current entry)
+\item Any entry with a space in it (e.g. C:$\backslash$Program Files$\backslash$Example)
+\item The path to the R bin directory
+
+\end{itemize}
+
+\item It is recommended to use the command-line version of R (R.exe) with the gaggle package. You may use the graphical version (RGui.exe), however if you do so, you will not see any informative messages from the R goose (for example, notifying you that a broadcast has been received). This is due to an issue with the graphical version or R on Windows.
+
+\end{itemize}
+
 \section{References}
 
 
