@@ -251,7 +251,7 @@ The gaggle package depends  has a couple of issues running under Windows. Both c
 
 \end{itemize}
 
-\item It is recommended to use the command-line version of R (R.exe) with the gaggle package. You may use the graphical version (RGui.exe), however if you do so, you will not see any informative messages from the R goose (for example, notifying you that a broadcast has been received). This is due to an issue with the graphical version or R on Windows.
+\item It is recommended to use the command-line version of R (R.exe) with the gaggle package. You may use the graphical version (RGui.exe), however if you do so, you will not see any informative messages from the R goose (for example, notifying you that a broadcast has been received). This is due to an issue with the graphical version of R on Windows.
 
 \end{itemize}
 
