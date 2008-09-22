@@ -39,7 +39,14 @@
 gaggleInit <- function (bossHost = 'localhost')
 # the user must call this, to create the java R goose, to register it with
 # the boss, and before sending or receiving any broadcasts
-{         
+{
+  # first, set the system classpath to a blank string
+  # this gets around a bug where RMI objects fail to unmarshal
+  # if the classpath has spaces in it (which it often does on
+  # Windows machines). Yes, this is a weird error.
+
+  Sys.unsetenv("CLASSPATH")
+
   cat (paste(' initializing gaggle package', .pkgVersion(), '(2007-04)\n'))
   goose <<- .jnew ("org/systemsbiology/gaggle/geese/rShell/RShellGoose", bossHost)
   tester = geese ()
@@ -65,7 +72,7 @@ gaggleInit <- function (bossHost = 'localhost')
 #---------------------------------------------------------------------------------
 .scriptVersion <- function ()
 {
-  return ("gaggle.R $Revision: 3054 $   $Date: 2008-03-13 16:46:47 -0700 (Thu, 13 Mar 2008) $");
+  return ("gaggle.R $Revision: 3504 $   $Date: 2008-09-22 10:45:45 -0700 (Mon, 22 Sep 2008) $");
 }
 #---------------------------------------------------------------------------------
 getNameList <- function ()
