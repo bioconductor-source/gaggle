@@ -1,11 +1,11 @@
 Package: gaggle
-Version: 1.13.0
+Version: 1.13.1
 Date: 03-11-2008
 Title: Broadcast data between R and other bioinformatics programs
 Author: Paul Shannon <pshannon@systemsbiology.org>
 Maintainer: Dan Tenenbaum <dtenenbaum@systemsbiology.org>
 Depends: R (>= 2.3.0), rJava (>= 0.4), graph (>= 1.10.2), RUnit (>= 0.4.17)
 Description: this package contains functions connecting R with the Gaggle
-License: GPL version 2 or newer
+License: GPL (>= 2)
 URL: http://gaggle.systemsbiology.org
 biocViews: Visualization, Annotation, GraphsAndNetworks
