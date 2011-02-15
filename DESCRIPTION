@@ -1,12 +1,11 @@
 Package: gaggle
-Version: 1.19.0
-Date: 03-11-2008
-Title: Broadcast data between R and other bioinformatics programs
+Version: 1.19.1
+Date: 02-15-2011
+Title: Broadcast data between R and Gaggle
 Author: Paul Shannon <pshannon@systemsbiology.org>
 Maintainer: Christopher Bare <cbare@systemsbiology.org>
 Depends: R (>= 2.3.0), rJava (>= 0.4), graph (>= 1.10.2), RUnit (>= 0.4.17)
-Description: this package contains functions connecting R with the Gaggle
-License: GPL (>= 2)
-URL: http://gaggle.systemsbiology.org
-biocViews: Visualization, Annotation, GraphsAndNetworks
-
+Description: This package contains functions enabling data exchange between R and Gaggle enabled bioinformatics software, including Cytoscape, Firegoose and Gaggle Genome Browser.
+License: GPL version 2 or newer
+URL: http://gaggle.systemsbiology.net/docs/geese/r/
+biocViews: Visualization, Annotation, GraphsAndNetworks, DataImport

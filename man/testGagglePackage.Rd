@@ -6,7 +6,7 @@
   \item nameLists
   \item matrices
   \item networks
-  \item hashmaps (environments in R)
+  \item tuples (environments in R)
   \item clusters (typically, row names and associated column names, selecting a submatix)
   }
   A good test of an installation, therfore, is to send each of these data types from R to

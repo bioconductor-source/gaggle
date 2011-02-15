@@ -17,4 +17,10 @@ export(
   hideGoose,
   testGagglePackage,
   connectToGaggle,
-  disconnectFromGaggle)
+  disconnectFromGaggle,
+  getJavaClassName,
+  getTupleAsList,
+  tupleToList,
+  newSingle,
+  addSingle,
+  newTuple)

@@ -4,7 +4,7 @@
 {
   #require ("methods")
   require ("rJava")
-  libname = gsub(" ", "%20", libname)
+  libname = gsub(" ", "%20", libname, "+")
   cat (paste ('\nonLoad -- libname:', libname, 'pkgname:', pkgname, '\n'))
 
     # All Bioconductor packages should use an x.y.z version scheme. The following rules apply:
@@ -28,7 +28,7 @@
 
   .jinit (fullPathToGaggleJar)
   cat ('  os version: ', .jcall ("java/lang/System", "S", "getProperty", "os.name"),'\n')
-    
+
     #-----------------------------------------------------------
     # as of february 2006, the gaggle requires java 1.5.
     # bail out if the version found by .jinit is some other version
@@ -75,7 +75,7 @@ gaggleInit <- function (bossHost = 'localhost')
 #---------------------------------------------------------------------------------
 .scriptVersion <- function ()
 {
-  return ("gaggle.R $Revision: 3504 $   $Date: 2008-09-22 10:45:45 -0700 (Mon, 22 Sep 2008) $");
+  return ("gaggle.R $Revision: 4499 $   $Date: 2010-08-10 17:15:03 -0700 (Tue, 10 Aug 2010) $");
 }
 #---------------------------------------------------------------------------------
 getNameList <- function ()
@@ -325,7 +325,7 @@ getNetwork <- function (directed=T)
     } # for
 
    # ---- now traverse the explicit edge attributes, and add them
-  if (!is.null (edas) && !is.na (edas)) for (eda in edas) {
+  if ((!length (edas) == 0) && !is.null (edas) && !is.na (edas)) for (eda in edas) {
     tokens = unlist (strsplit (eda, '::'))
     nodeA = tokens [1]
     nodeB = tokens [2]
@@ -347,7 +347,7 @@ getNetwork <- function (directed=T)
     edgeData (g, from=nodeA, to=nodeB, attr=attributeName) = attributeValue
   } # if edge attributes
 
-  if (!is.null (noas) && !is.na (noas) && length (noas) > 0) for (noa in noas) {
+  if ((!length (noas) == 0) && !is.null (noas) && !is.na (noas)) for (noa in noas) {
     tokens = unlist (strsplit (noa, '::'))
     node = tokens [1]
     attributeName = tokens [2]
@@ -366,15 +366,43 @@ getNetwork <- function (directed=T)
 
 }# .gaggleNetworkToGraphNEL
 #-------------------------------------------------------------------------------------------
+# test whether the given object is an instance of a Java Tuple object
+isJavaTuple <- function(obj) {
+	return (class(obj)=="jobjRef" && isS4(obj) && slot(obj, "jclass")=="org/systemsbiology/gaggle/core/datatypes/Tuple" && !is.jnull(obj))
+}
+#-------------------------------------------------------------------------------------------
+
+# get the Java class name of an rJava object
+getJavaClassName <- function(jobj, quiet=FALSE) {
+	if (class(jobj)=='jobjRef') {
+		if (is.jnull(jobj)) {
+			return("null")
+		}
+		return(.jcall(.jcall(jobj, 'Ljava/lang/Class;', 'getClass'), 'S', 'getName'))
+	}
+	else {
+		if (!quiet) {
+			cat("Error in getJavaClassName: Not a java object?\n")
+		}
+		return("Not a java object")
+	}
+}
+
+#-------------------------------------------------------------------------------------------
+
 broadcast <- function (x, name='from R')
 {
-  if (is.matrix (x)) {
+  if (is.matrix (x) || is.data.frame(x)) {
      #cat ('broadcasting matrix, name: ', name, '\n')
        # java stores matrices in row-major order, R uses column-major, so be sure to
        # transpose the actual data before sending it to java
-    .jcall (goose, "V", "createAndBroadcastMatrix", rownames (x), colnames (x),
+    if (is.null(rownames(x)) || is.null(colnames(x))) {
+      cat('Error: row and column names required to broadcast matrix')
+    } else {
+      .jcall (goose, "V", "createAndBroadcastMatrix", rownames (x), colnames (x),
                           as.numeric (as.vector (t(x))), name)
     }
+  }
 
   else if (is.vector (x)) {
     if (length (intersect (c("rowNames", "columnNames"), names (x))) == 2) {
@@ -389,7 +417,16 @@ broadcast <- function (x, name='from R')
 		x <- as.vector(c(x))
       .jcall (goose, "V", "broadcastList", x, name)
       } # unnamed list
-    } # vector 
+    } # vector
+ 
+  # Broadcast a (Java) Tuple object.
+  # Added by JCB to support genome browser. 
+  else if (isJavaTuple(x)) {
+    if (name!='from R') {
+      .jcall(x, "V", "setName", name)
+    }
+    .jcall(goose, "V", "broadcastTuple", x) 
+  }
 
   else if (class (x) == "graphNEL") {
     .broadcastGraph (x, name)
@@ -652,3 +689,109 @@ disconnectFromGaggle <- function()
     .jcall (goose, "V", "doExit")
     invisible()
 }
+#--------------------------------------------------------------------------------------------------
+# Receive a gaggle tuple and converts it to an R list
+getTupleAsList <- function() {
+	tuple <- .jcall(goose, "Lorg/systemsbiology/gaggle/core/datatypes/Tuple;", "getTuple")
+	return(tupleToList(tuple))
+}
+#--------------------------------------------------------------------------------------------------
+# Converts a Gaggle Tuple into a nested list structure. Receiving gaggle data
+# types other than tuple nested in the list is not supported.
+tupleToList <- function(tuple) {
+	result <- list()
+	if (!is.null(tuple) && !is.jnull(tuple)) {
+		singles <- .jcall(tuple, "Ljava/util/List;", "getSingleList")
+		len <- .jcall(singles, "I", "size")
+		for (i in seq(from=0, length.out = len)) {
+			single <- .jcall(tuple, "Lorg/systemsbiology/gaggle/core/datatypes/Single;", "getSingleAt", as.integer(i))
+			key <- .jcall(single, "Ljava/lang/String;", "getName")
+			value <- .jcall(single, "Ljava/io/Serializable;", "getValue")
+
+			if (is.null(value) || is.jnull(value)) {
+				r.value <- NULL
+			}
+			else {
+				# I'd like to use instanceof, which requires rJava 0.8.
+				# Note that the current method will fail to detect subclasses of Tuple
+				j.class <- .jcall(.jcall(value, "Ljava/lang/Class;", "getClass"), "Ljava/lang/String;", "getName")
+				# cat("j.class = ", j.class, "\n")
+				if (j.class == "org.systemsbiology.gaggle.core.datatypes.Tuple") {
+					# recurse into tuple values
+					r.value <- tupleToList(value)
+				} else {
+					r.value <- .jsimplify(value)
+				}
+			}
+
+			# append the value or key/value pair to the result
+			if (is.jnull(key)) {
+				result[[length(result)+1]] <- r.value
+			} else {
+				result[[key]] <- r.value
+			}
+		}
+	}
+	return(result)
+}
+#--------------------------------------------------------------------------------------------------
+# Create a Gaggle Single object from an R value of type integer, double, logical, or character.
+# Numeric values are naturally doubles in R, so use as.integer(x) to create an integer.
+newSingle <- function(name, value) {
+	if (typeof(value)=="integer") {
+		jvalue = .jnew('java/lang/Integer', value)
+	}
+	else if (typeof(value)=="double") {
+		jvalue = .jnew('java/lang/Double', value)
+	}
+	else if (typeof(value)=="character") {
+		jvalue = .jnew('java/lang/String', value)
+	}
+	else if (typeof(value)=="logical") {
+		jvalue = .jnew('java/lang/Boolean', value)
+	}
+	else if (class(value)=='list') {
+		jvalue = newTuple(name, value)
+	}
+	else if (class(value)=='jobjRef') {
+		if (isJavaTuple(value)) {
+			jvalue <- value
+		}
+	}
+	else {
+		cat("Can't convert R type ", typeof(value), " to Java.\n")
+	}
+	return(.jnew('org/systemsbiology/gaggle/core/datatypes/Single', name, .jcast(jvalue, 'java/io/Serializable')))
+}
+#--------------------------------------------------------------------------------------------------
+# add a single to a tuple, either as a name,value pair
+# or add a premade single object.
+addSingle <- function(tuple, name=NULL, value=NULL, single=NULL) {
+	if (is.null(single)) {
+		single = newSingle(name, value)
+	}
+	.jcall(tuple, 'V', 'addSingle', single)
+	return(tuple)
+}
+#--------------------------------------------------------------------------------------------------
+# Create a new tuple. Use with addSingle.
+# list can hold values that map to a java primitive type or recursively list of such values
+newTuple <- function(name, list=NULL) {
+	tuple <- .jnew('org/systemsbiology/gaggle/core/datatypes/Tuple', name)
+	if (!is.null(list) && is.environment(list)) {
+		for (key in ls(list)) {
+			addSingle(tuple, key, list[[key]])
+		}
+	}
+	else if (!is.null(list)) {
+		# can't figure out how to get the name of each element inside the reduce function, we have
+		# to wimp out and use a loop
+		# Reduce(function(t, element) { addSingle(t, ??name of element??, element)}, cmd.import.track, tuple)
+		for(i in 1:length(list)) {
+			if (!is.null(list[[i]]))
+				addSingle(tuple, names(list)[i], list[[i]])
+		}
+	}
+	return(tuple)
+}
+#--------------------------------------------------------------------------------------------------

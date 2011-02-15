@@ -60,7 +60,7 @@ the other data types -- matrices, networks, and associative arrays (about which 
 
 The Gaggle is open source and written in Java.  We rely upon (and are
 grateful for) the R package \Rpackage{rJava} for Java/R integration.  Further
-information about the Gaggle may be found at \textbf{http://gaggle.systemsbiology.org}
+information about the Gaggle may be found at \textbf{http://gaggle.systemsbiology.net}
 and in the references.
 
 The current vignette illustrates the Gaggle with a very simple example. We create
@@ -96,7 +96,7 @@ including the \textbf{Gaggle Boss} which must always be started first in any Gag
 you run.
 
 \begin{center}
-\url{http://gaggle.systemsbiology.org/R/vignettes/1}
+\url{http://gaggle.systemsbiology.net/R/vignettes/1}
 \end{center}
 
 \section{Technical Background and Notes}
@@ -141,7 +141,7 @@ gaggling websites, until we improve them!
 In this first demonstration, we 
 
 \begin{itemize}
-\item Start the Gaggle Boss  (browse to \url{http://gaggle.systemsbiology.org/R/vignettes/1}, Part 1, for web start links)
+\item Start the Gaggle Boss  (browse to \url{http://gaggle.systemsbiology.net/R/vignettes/1}, Part 1, for web start links)
 \item Start Cytoscape
 \item Start R, and load the gaggle package
 \item Create a randomEGraph, broadcast it, and see it  displayed in Cytoscape
@@ -228,11 +228,11 @@ broadcast (c ('B', 'E'))
 
 For more information, and for more extensive demonstrations, please visit
 
-\url{http://gaggle.systemsbiology.org/R/vignettes/1}
+\url{http://gaggle.systemsbiology.net/R/vignettes/1}
 
 and the Gaggle website:
 
-\url{http://gaggle.systemsbiology.org}
+\url{http://gaggle.systemsbiology.net}
 
 
 \section{Issues with the gaggle package on Windows}
