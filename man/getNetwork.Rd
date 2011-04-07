@@ -5,7 +5,7 @@
              user before it is available as a network variable.  (This step may be eliminated in
              the future.)}
 
-\usage{n <- getNetwork ()}
+\usage{getNetwork ()}
 \value{Returns a GraphNEL object.}
 
 \seealso{

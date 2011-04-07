@@ -2,7 +2,7 @@
 \alias{getTuple}
 \title{Create an R variable from Most Recently Broadcast Tuple}
 \description{After a tuple is broadcast to the R goose, this method makes it available as an R environment object.}
-\usage{env <- getTuple ()}
+\usage{getTuple ()}
 \arguments{
   }
 

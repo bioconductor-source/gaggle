@@ -4,7 +4,7 @@
 \description{After a cluster is broadcast to the R goose, one additional step is required of the R
              user before it is available as a character list variable in R.  (This step may be eliminated in
              the future.)}
-\usage{cluster <- getCluster ()}
+\usage{getCluster ()}
 \arguments{
   }
 

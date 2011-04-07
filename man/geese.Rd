@@ -6,7 +6,7 @@
              determine which geese get the data.  Or you can use \code{setTargetGoose} to specify
              one particular goose -- this is the most common approach.  The current function supports
              that approach:  it returns the names of all currently running geese.}
-\usage{nm <- geese ()}
+\usage{geese ()}
 \value{Returns the names of all currently running geese as a list of character strings.}
 
 \seealso{

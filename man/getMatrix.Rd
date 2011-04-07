@@ -5,7 +5,7 @@
              user before it is available as a matrix variable.  (This step may be eliminated in
              the future.)}
 
-\usage{m <- getMatrix ()}
+\usage{getMatrix ()}
 \value{Returns a matrix with double precision elements, row names, and column names.}
 
 \seealso{

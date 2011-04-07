@@ -4,7 +4,7 @@
 \description{If a goose has a graphical user interface, then it can usually be hidden from view, that is,
              iconified.  This command \emph{reverses} that action, making sure that is visible..}
 
-\usage{nm <- showGoose (target=NULL)}
+\usage{showGoose (target=NULL)}
 \arguments{
   \item{target}{If missing, or NULL, then the \code{currentTargetGoose} is displayed.  If called with
                 the name of one of the current \code{geese}, that goose will be displayed.}
