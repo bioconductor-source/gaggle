@@ -140,7 +140,7 @@ getMatrix <- function ()
 
 }
 #---------------------------------------------------------------------------------
-getNetwork <- function (directed=T)
+getNetwork <- function (directed=TRUE)
 {
   edgeStrings          = .jcall (goose, "[S", "getNetworkAsStringArray")
   nodeAttributeStrings = .jcall (goose, "[S", "getNetworkNodeAttributesAsStringArray")
