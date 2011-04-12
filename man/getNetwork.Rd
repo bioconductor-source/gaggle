@@ -6,6 +6,10 @@
              the future.)}
 
 \usage{getNetwork (directed=TRUE)}
+\arguments{
+  \item{directed}{Whether the network is directed}
+}
+
 \value{Returns a GraphNEL object.}
 
 \seealso{
