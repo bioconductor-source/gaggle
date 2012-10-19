@@ -38,7 +38,10 @@
   
   jvmVersion = .jcall ("java/lang/System", "S", "getProperty", "java.version")
   cat (' jvm version: ', jvmVersion, '\n')
-  if (is.na (pmatch ("1.5.", jvmVersion)) & is.na (pmatch ("1.6.", jvmVersion))) {
+  if (is.na (pmatch ("1.5.", jvmVersion)) && 
+    is.na (pmatch ("1.6.", jvmVersion)) && 
+    is.na (pmatch("1.7", jvmVersion))) 
+  {
     cat ('\n   You are using the wrong version of Java.\n',
             '  Please see http://gaggle.systemsbiology.org/docs/html/java\n\n')
     return ()
