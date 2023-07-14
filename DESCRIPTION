@@ -1,5 +1,5 @@
 Package: gaggle
-Version: 1.69.0
+Version: 1.69.1
 Date: 2020-09-01
 Title: Broadcast data between R and Gaggle
 Author: Paul Shannon <pshannon@systemsbiology.org>
@@ -13,3 +13,4 @@ License: GPL version 2 or newer
 URL: http://gaggle.systemsbiology.net/docs/geese/r/
 biocViews: ThirdPartyClient, Visualization, Annotation,
         GraphAndNetwork, DataImport
+PackageStatus: Deprecated
